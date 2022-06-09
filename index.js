@@ -4,30 +4,42 @@ const port = 3010;
 const path = require('path');
 const mongoose = require('mongoose');
 var cors = require('cors');
-
+require('dotenv').config();
 app.use(express.static('static'));
-app.options('*', cors());
-app.use(cors({ origin: 'https://react-wqgn3t.stackblitz.io' }));
+const userModel = require('./models');
+var corsOptions = {
+  origin: '*',
+  preflightContinue: false,
+  optionsSuccessStatus: 200,
+};
+mongoose.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-// db.connect('mongodb://localhost:27017/databasename', function (err) {
-//   if (err) {
-//     console.log('Unable to connect to Mongo.');
-//     process.exit(1);
-//   } else {
-//     app.listen(3000, function () {
-//       console.log('Listening on port 3000...');
-//     });
-//   }
-// });
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error: '));
+db.once('open', function () {
+  console.log('Connected successfully');
+});
 
 app.get('/', (req, res) => {
   res.send('hello root route');
 });
-app.post('/login', (req, res) => {
+
+app.post('/login', cors(corsOptions), (req, res) => {
   console.log(req);
   res.send({ token: 'jhsbdjhbjsdhb' });
 });
-app.get('/signup', (req, res) => {
+app.get('/signup', async (req, res) => {
+  const user = new userModel(request.body);
+
+  try {
+    await user.save();
+    response.send(user);
+  } catch (error) {
+    response.status(500).send(error);
+  }
   res.send('signup');
 });
 
